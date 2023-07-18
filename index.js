@@ -20,25 +20,34 @@ app.get("/", function (req, res) {
 
 
 // your first API endpoint... 
-app.get("/api/:dateString", function (req, res) {
-  let dateString = req.params.dateString;
-  let date;
-  if(!dateString) {
-    date = new Date();
-  } else if (dateString) {
-    date = new Date(parseInt(dateString));
-  } else {
-    date = new Date(dateString);
+
+app.get('/api/:date?', (req, res) => {
+  const dateString = req.params.date
+  const dateStringRegex = /^[0-9]+$/
+  const numbersOnly = dateStringRegex.test(dateString)
+ 
+  if (!numbersOnly) {
+    const unixTimestamp = Date.parse(dateString)
+    const utcDate = new Date(unixTimestamp).toUTCString()
+ 
+    unixTimestamp
+    ? res.json({ unix: unixTimestamp, utc: utcDate })
+    : res.json({ error: "Invalid Date" })
+  } 
+  else {
+    const unixTimestamp = parseInt(dateString)
+    const actualDate = new Date(unixTimestamp)
+    const utcDate = actualDate.toUTCString()
+ 
+    res.json({ unix: unixTimestamp, utc: utcDate })
   }
-
-  if(date.toString() === 'Invalid Date') {
-    res.json({error: date.toString()});
-  } else {
-    res.json({unix: date.getTime(), utc: date.toUTCString()});
-  }
-});
-
-
+ 
+   app.get('/api', (req, res) => {
+     const currentDate = new Date().toUTCString()
+     const currentUnix = Date.parse(currentDate)
+     res.json({ unix: currentUnix, utc: currentDate })
+   })
+ })
 
 // listen for requests :)
 let listener = app.listen(process.env.PORT, function () {
