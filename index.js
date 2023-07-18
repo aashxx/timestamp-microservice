@@ -20,34 +20,56 @@ app.get("/", function (req, res) {
 
 
 // your first API endpoint... 
+// your first API endpoint... 
 
-app.get('/api/:date?', (req, res) => {
-  const dateString = req.params.date
-  const dateStringRegex = /^[0-9]+$/
-  const numbersOnly = dateStringRegex.test(dateString)
- 
-  if (!numbersOnly) {
-    const unixTimestamp = Date.parse(dateString)
-    const utcDate = new Date(unixTimestamp).toUTCString()
- 
-    unixTimestamp
-    ? res.json({ unix: unixTimestamp, utc: utcDate })
-    : res.json({ error: "Invalid Date" })
-  } 
-  else {
-    const unixTimestamp = parseInt(dateString)
-    const actualDate = new Date(unixTimestamp)
-    const utcDate = actualDate.toUTCString()
- 
-    res.json({ unix: unixTimestamp, utc: utcDate })
+app.get('/api', (req,res) =>{
+  let date = new Date();
+  
+  let result = {
+    unix: date.getTime(),
+    utc: date.toUTCString()
   }
- 
-   app.get('/api', (req, res) => {
-     const currentDate = new Date().toUTCString()
-     const currentUnix = Date.parse(currentDate)
-     res.json({ unix: currentUnix, utc: currentDate })
-   })
- })
+
+  res.send(result);
+});
+
+app.get('/api/:date',(req,res) => {
+
+  //Handling data parameters with invalid format
+
+  if(!Date.parse(req.params.date) && !Number(req.params.date))
+  {
+    return res.send({error: "Invalid Date"});
+  }
+
+
+  //Checking for conditions when date parameter is given in microseconds.
+
+  else if(!(/[-]/.test(req.params.date)) && Number(req.params.date))
+  {
+    let date = new Date(Number(req.params.date));
+
+    return res.send({
+      unix: date.getTime(),
+      utc: date.toUTCString()
+    });
+  } 
+
+  //For handling regular test cases when date parameter is in a valid date format.
+
+  let date = new Date(req.params.date);
+
+  let result = {
+    unix: date.getTime(),
+    utc: date.toUTCString()
+  }
+
+  res.status(200).send(result);
+});
+
+
+
+
 
 // listen for requests :)
 let listener = app.listen(process.env.PORT, function () {
